@@ -9,183 +9,100 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body { background-color: #F7F7F5; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        /* 頁首圓弧銜接 */
+        .app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; }
         .main-content {
+            background-color: #F7F7F5;
+            border-radius: 30px 30px 0 0;
             margin-top: -30px;
-            border-top-left-radius: 30px;
-            border-top-right-radius: 30px;
             position: relative;
             z-index: 10;
-            background-color: #F7F7F5;
             padding: 20px;
-            min-height: 100vh;
+            min-height: 500px;
         }
         .hide-scroll::-webkit-scrollbar { display: none; }
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); }
-        .hay-accent { background-color: #FF6B35; }
-        .hay-bg-sub { background-color: #E8F0E6; color: #4A5D4E; }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); border-radius: 16px; }
+        .hay-accent { background-color: #FF6B35; color: white; }
     </style>
 </head>
 <body>
-    <div id="app" class="max-w-[500px] mx-auto min-h-screen relative shadow-inner">
-        <div class="relative w-full h-[250px] overflow-hidden bg-gray-200">
-            <img src="Tokyo trip web banner.png" alt="Tokyo Trip" class="w-full h-full object-cover">
+    <div id="app" class="app-container shadow-inner">
+        <div class="relative h-[250px] w-full bg-gray-200">
+            <img src="Tokyo trip web banner.png" class="w-full h-full object-cover">
             
-            <div class="absolute bottom-12 right-4 flex gap-2 glass p-2 rounded-2xl shadow-lg">
-                <button v-for="tab in tabs" :key="tab.id" @click="currentTab = tab.id" 
-                        :class="['p-2.5 rounded-xl transition-all', currentTab === tab.id ? 'hay-accent text-white shadow' : 'text-gray-500 hover:text-gray-900']">
-                    <i :data-lucide="tab.icon" class="w-5 h-5"></i>
-                </button>
+            <div class="absolute bottom-12 right-4 flex gap-2 glass p-2 shadow-xl">
+                <button @click="tab = 'plan'" :class="tab==='plan'?'hay-accent':'text-gray-500'" class="p-3 rounded-xl transition"><i data-lucide="map"></i></button>
+                <button @click="tab = 'info'" :class="tab==='info'?'hay-accent':'text-gray-500'" class="p-3 rounded-xl transition"><i data-lucide="info"></i></button>
+                <button @click="tab = 'money'" :class="tab==='money'?'hay-accent':'text-gray-500'" class="p-3 rounded-xl transition"><i data-lucide="banknote"></i></button>
             </div>
         </div>
 
-        <main class="main-content shadow-lg">
+        <main class="main-content">
             
-            <div v-if="currentTab === 'schedule'">
-                <div class="bg-white rounded-2xl p-4 mb-5 flex items-center justify-between shadow-sm border border-gray-100">
-                    <div class="flex items-center text-gray-800 font-medium">
-                        <i data-lucide="sun" class="text-yellow-400 mr-2"></i> Tokyo Today
-                    </div>
-                    <span class="text-3xl font-light text-gray-900">18°C</span>
-                </div>
-
+            <div v-if="tab === 'plan'">
                 <div class="flex overflow-x-auto gap-4 mb-6 hide-scroll py-2">
-                    <div v-for="d in dates" :key="d.date" @click="selectedDate = d.date"
-                         :class="['flex-shrink-0 w-14 h-20 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition shadow-sm', 
-                                 selectedDate === d.date ? 'hay-accent text-white' : 'bg-white text-gray-400']">
-                        <span class="text-xs font-bold uppercase">{{ d.weekday }}</span>
-                        <span class="text-2xl font-bold">{{ d.day }}</span>
+                    <div v-for="d in ['4/21','4/22','4/23','4/24','4/25','4/26']" 
+                         @click="selDate = d"
+                         :class="selDate === d ? 'bg-[#FF6B35] text-white shadow' : 'bg-white text-gray-400'"
+                         class="flex-shrink-0 w-14 h-20 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition shadow-sm border border-gray-50">
+                        <span class="text-xs">Day</span>
+                        <span class="text-xl font-bold">{{d.split('/')[1]}}</span>
                     </div>
                 </div>
 
-                <div class="space-y-4">
-                    <div v-for="(item, index) in filteredItems" :key="index">
-                        
-                        <div v-if="item.category === '航班'" class="bg-slate-800 text-white rounded-2xl p-5 shadow-xl relative overflow-hidden">
-                             <div class="flex justify-between items-center relative z-10 mb-4">
-                                 <div class="text-center">
-                                     <div class="text-3xl font-bold">{{item.from_code}}</div>
-                                     <div class="text-xs opacity-60">{{item.time1}}</div>
-                                 </div>
-                                 <i data-lucide="plane" class="w-6 h-6 text-[#FF6B35]"></i>
-                                 <div class="text-center">
-                                     <div class="text-3xl font-bold">{{item.to_code}}</div>
-                                     <div class="text-xs opacity-60">{{item.time2}}</div>
-                                 </div>
-                             </div>
-                             <div class="mt-4 pt-3 border-t border-white/10 flex justify-between text-xs opacity-80">
-                                 <span>{{item.from}} → {{item.to}}</span>
-                                 <span>{{item.no}} | T1</span>
-                             </div>
-                             <i data-lucide="ticket" class="absolute -bottom-5 -right-5 w-24 h-24 text-white/5 rotate-12"></i>
+                <div v-if="selDate === '4/21'" class="space-y-4">
+                    <div class="bg-slate-800 text-white p-5 rounded-3xl shadow-lg relative overflow-hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="text-center"><div class="text-2xl font-bold">TPE</div><div class="text-xs opacity-60">13:00</div></div>
+                            <i data-lucide="plane" class="text-[#FF6B35]"></i>
+                            <div class="text-center"><div class="text-2xl font-bold">NRT</div><div class="text-xs opacity-60">17:15</div></div>
                         </div>
+                        <div class="text-xs border-t border-white/10 pt-3 opacity-80">CX450 | 桃園 → 成田</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 cursor-pointer" @click="goMap('KOMACHI 116-0014')">
+                        <div class="font-bold">KOMACHI Check-in</div>
+                        <div class="text-xs text-gray-400 mt-1">地址: 5 Chome-9-3 Higashinippori | 點擊導航</div>
+                    </div>
+                </div>
 
-                        <div v-else class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 cursor-pointer" @click="openMap(item.address)">
-                            <div class="flex justify-between items-start mb-2">
-                                <span class="px-2.5 py-1 hay-bg-sub text-xs rounded-md font-bold uppercase tracking-wider">{{item.category}}</span>
-                                <span class="text-xs text-gray-400">{{item.time}}</span>
-                            </div>
-                            <h3 class="font-bold text-xl text-gray-900">{{item.name}}</h3>
-                            <p v-if="item.note" class="text-sm text-gray-500 mt-1 italic">{{item.note}}</p>
-                            <div v-if="item.address" class="mt-4 text-sm text-blue-600 flex items-center gap-1 font-medium">
-                                <i data-lucide="navigation" class="w-3.5 h-3.5"></i> 開啟地圖導航
-                            </div>
-                        </div>
-
-                        <div v-if="index < filteredItems.length - 1" class="flex items-center justify-center my-3 text-gray-300 text-[10px] uppercase tracking-widest">
-                            <i data-lucide="arrow-down" class="w-3 h-3 mr-1"></i> TRAVELLING
-                        </div>
+                <div v-if="selDate === '4/24'" class="space-y-4">
+                     <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer" @click="goMap('Den Kushi Flori')">
+                        <div class="flex justify-between text-xs text-gray-400 mb-1"><span>美食</span><span>12:00</span></div>
+                        <div class="font-bold text-lg">Den Kushi Flori (午餐)</div>
+                        <div class="text-xs text-gray-500 mt-1">Elmo, Potato, Avon | 點擊導航</div>
                     </div>
                 </div>
             </div>
 
-            <div v-if="currentTab === 'info'" class="space-y-6">
-                <div class="bg-[#D1E8ED] rounded-3xl p-6 shadow-inner">
-                    <h2 class="font-bold mb-4 flex items-center text-blue-950"><i data-lucide="refresh-cw" class="w-5 h-5 mr-2"></i> 匯率換算 (0.21)</h2>
-                    <input type="number" v-model="jpy_input" placeholder="輸入日幣 JPY" class="w-full p-4 rounded-xl border-none text-xl mb-3 shadow-sm">
-                    <div class="bg-white/60 p-4 rounded-xl font-bold text-2xl text-blue-900 text-center shadow-inner">TWD $ {{ Math.round(jpy_input * 0.21) }}</div>
+            <div v-if="tab === 'info'" class="space-y-4">
+                <div class="bg-[#D1E8ED] p-6 rounded-3xl">
+                    <div class="font-bold mb-3 flex items-center text-blue-950"><i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i> 匯率 (0.21)</div>
+                    <input type="number" v-model="jpy" placeholder="輸入日幣 JPY" class="w-full p-4 rounded-xl border-none text-xl mb-3 shadow-sm">
+                    <div class="text-center font-bold text-2xl text-blue-900 mt-2">約 TWD $ {{ Math.round(jpy * 0.21) }}</div>
                 </div>
-
-                <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                    <h2 class="font-bold text-xl mb-3 text-gray-950">住宿：KOMACHI</h2>
-                    <p class="text-sm text-gray-600 mb-2">5 Chome-9-3 Higashinippori, Tokyo 116-0014</p>
-                    <div class="text-xs text-gray-400 space-y-1.5 border-t pt-4">
-                        <p>• 4/21 - 4/26: Elmo, Potato, Yifan</p>
-                        <p>• 4/22 - 4/26: Avon</p>
-                        <p>• 4/22 - 4/24: Moss</p>
-                    </div>
-                    <button @click="openMap('KOMACHI Tokyo')" class="mt-5 w-full py-3.5 bg-gray-900 text-white rounded-xl text-sm font-bold shadow-md active:scale-[0.98]">開啟地圖導航</button>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                    <div class="font-bold text-lg mb-2">住宿：KOMACHI</div>
+                    <div class="text-xs text-gray-400 border-t pt-3">4/21-26: Elmo, Potato, Yifan<br>4/22-26: Avon<br>4/22-24: Moss</div>
                 </div>
             </div>
+        </div>
 
-            <div v-if="['shopping', 'finance'].includes(currentTab)" class="py-24 text-center">
-                <i data-lucide="construction" class="w-16 h-16 mx-auto text-gray-200 mb-4"></i>
-                <p class="text-gray-400">目前尚無資料</p>
-            </div>
-        </main>
-
-        <button class="fixed bottom-6 right-6 w-14 h-14 hay-accent text-white rounded-full shadow-2xl flex items-center justify-center z-50 active:scale-95">
+        <div class="fixed bottom-6 right-6 w-14 h-14 bg-[#FF6B35] text-white rounded-full shadow-2xl flex items-center justify-center">
             <i data-lucide="plus"></i>
-        </button>
+        </div>
     </div>
 
     <script>
-        // 確保 Lucide Icons 與 Vue 結構正確初始化
-        const { createApp, ref, computed, onMounted, updated } = Vue;
-
+        const { createApp, ref, onMounted, updated } = Vue;
         createApp({
             setup() {
-                const currentTab = ref('schedule');
-                const selectedDate = ref('4/21');
-                const jpy_input = ref('');
-
-                const tabs = [
-                    { id: 'schedule', icon: 'map' },
-                    { id: 'info', icon: 'info' },
-                    { id: 'shopping', icon: 'shopping-cart' },
-                    { id: 'finance', icon: 'banknote' }
-                ];
-
-                const dates = [
-                    { date: '4/21', weekday: 'Mon', day: '21' },
-                    { date: '4/22', weekday: 'Tue', day: '22' },
-                    { date: '4/23', weekday: 'Wed', day: '23' },
-                    { date: '4/24', weekday: 'Thu', day: '24' },
-                    { date: '4/25', weekday: 'Fri', day: '25' },
-                    { date: '4/26', weekday: 'Sat', day: '26' }
-                ];
-
-                // 整合所有行程資料
-                const allItems = [
-                    // Day 1
-                    { date: '4/21', category: '航班', from_code: 'TPE', to_code: 'NRT', from: '桃園', to: '成田', time1: '13:00', time2: '17:15', no: 'CX450' },
-                    { date: '4/21', category: '住宿', name: 'KOMACHI Check-in', time: '18:30', address: '116-0014 Tokyo, Arakawa City, Higashinippori, 5 Chome-9-3' },
-                    // Day 3
-                    { date: '4/23', category: '景點', name: '秩父郊外行程', time: '09:00', note: '記得準時出發' },
-                    // Day 4
-                    { date: '4/24', category: '美食', name: 'Den Kushi Flori (午餐)', time: '12:00', address: '日本〒150-0001 Tokyo, Shibuya, Jingumae, 5 Chome−46−7 GEMS青山CROSS B1A', note: '預約人: Elmo, Potato, Avon' }
-                ];
-
-                // 根據選擇日期過濾行程
-                const filteredItems = computed(() => allItems.filter(item => item.date === selectedDate.value));
-
-                // 開啟地圖導航功能
-                const openMap = (addr) => {
-                    if(!addr) return;
-                    window.open('http://googleusercontent.com/maps.google.com/3' + encodeURIComponent(addr), '_blank');
-                };
-
-                // 初始化 Lucide 圖示
-                const refreshIcons = () => {
-                    if (typeof lucide !== 'undefined') {
-                        lucide.createIcons();
-                    }
-                };
-
-                onMounted(refreshIcons);
-                updated(refreshIcons);
-
-                return { currentTab, selectedDate, jpy_input, tabs, dates, filteredItems, openMap };
+                const tab = ref('plan');
+                const selDate = ref('4/21');
+                const jpy = ref('');
+                const goMap = (a) => window.open('http://googleusercontent.com/maps.google.com/4' + encodeURIComponent(a));
+                const icons = () => lucide.createIcons();
+                onMounted(icons);
+                updated(icons);
+                return { tab, selDate, jpy, goMap };
             }
         }).mount('#app');
     </script>
