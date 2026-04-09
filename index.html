@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Friends in Tokyo | 行程助手</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: #F7F7F5; }
+        /* Hay 跳色風格 */
+        .color-primary { background-color: #E8F0E6; } /* 淺綠 */
+        .color-accent { background-color: #FF6B35; }  /* 亮橘 */
+        .color-soft-blue { background-color: #D1E8ED; }
+        
+        .tab-active { color: #FF6B35; border-bottom: 3px solid #FF6B35; }
+        .glass-nav { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+        
+        /* 圓弧銜接 */
+        .main-content {
+            margin-top: -30px;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 橫向滾動日期 */
+        .scroll-hide::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen pb-24">
+        <div class="relative w-full h-[250px] overflow-hidden">
+            <img src="Tokyo trip web banner.png" alt="Banner" class="w-full h-full object-cover">
+            
+            <div class="absolute bottom-12 right-4 flex space-x-2 glass-nav p-2 rounded-2xl shadow-lg">
+                <button v-for="tab in tabs" :key="tab.id" @click="currentTab = tab.id" 
+                        :class="['p-2 rounded-xl transition', currentTab === tab.id ? 'bg-[#FF6B35] text-white' : 'text-gray-600']">
+                    <i :data-lucide="tab.icon" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <main class="main-content bg-[#F7F7F5] p-5">
+            
+            <section v-if="currentTab === 'schedule'">
+                <div class="flex overflow-x-auto space-x-4 mb-6 scroll-hide py-2">
+                    <div v-for="d in dates" :key="d.date" @click="selectedDate = d.date"
+                         :class="['flex-shrink-0 flex flex-col items-center justify-center w-14 h-20 rounded-2xl transition', 
+                                 selectedDate === d.date ? 'bg-[#FF6B35] text-white shadow-md' : 'bg-white text-gray-400']">
+                        <span class="text-xs font-medium">{{ d.weekday }}</span>
+                        <span class="text-xl font-bold">{{ d.day }}</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 mb-4 flex items-center justify-between shadow-sm border border-gray-100">
+                    <div class="flex items-center">
+                        <i data-lucide="sun" class="text-yellow-400 mr-2"></i>
+                        <span class="text-gray-700 font-medium">Tokyo Today</span>
+                    </div>
+                    <span class="text-2xl font-light">18°C</span>
+                </div>
+
+                <div class="space-y-4">
+                    <div v-for="(item, index) in dailyItems" :key="index" class="relative">
+                        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100" @click="openGoogleMaps(item.address)">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="px-2 py-1 bg-[#E8F0E6] text-[#4A5D4E] text-xs rounded-md">{{ item.category }}</span>
+                                <span class="text-xs text-gray-400">{{ item.time }}</span>
+                            </div>
+                            <h3 class="font-bold text-lg text-gray-800">{{ item.name }}</h3>
+                            <p class="text-sm text-gray-500 mt-1">{{ item.note }}</p>
+                        </div>
+                        
+                        <div v-if="index < dailyItems.length - 1" class="flex items-center justify-center my-2 text-gray-400 text-xs">
+                            <i data-lucide="map-pin" class="w-3 h-3 mr-1"></i>
+                            <span>{{ item.travelTime }} mins by train</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="fixed bottom-6 right-6 w-14 h-14 bg-[#FF6B35] text-white rounded-full shadow-xl flex items-center justify-center">
+                    <i data-lucide="plus"></i>
+                </button>
+            </section>
+
+            <section v-if="currentTab === 'info'" class="space-y-6">
+                <div class="bg-[#D1E8ED] rounded-3xl p-6">
+                    <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="refresh-cw" class="mr-2"></i> 匯率換算</h2>
+                    <div class="space-y-3">
+                        <input type="number" v-model="jpy" placeholder="JPY" class="w-full p-3 rounded-xl border-none">
+                        <div class="text-center text-gray-500">↓</div>
+                        <div class="w-full p-3 rounded-xl bg-white/50 font-bold">TWD: {{ (jpy * 0.21).toFixed(0) }}</div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-3xl p-6 shadow-sm">
+                    <h2 class="font-bold mb-4">住宿：KOMACHI</h2>
+                    <p class="text-sm text-gray-500">5 Chome-9-3 Higashinippori, Arakawa City</p>
+                    <button class="mt-3 text-[#FF6B35] text-sm font-medium">查看完整住宿清單 →</button>
+                </div>
+            </section>
+
+            <section v-if="['shopping', 'finance'].includes(currentTab)" class="text-center py-20 text-gray-400">
+                <i data-lucide="construction" class="w-12 h-12 mx-auto mb-2"></i>
+                <p>功能開發中，敬請期待您的東京之旅</p>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted, updated } = Vue;
+
+        createApp({
+            setup() {
+                const currentTab = ref('schedule');
+                const selectedDate = ref('4/21');
+                const jpy = ref(null);
+
+                const tabs = [
+                    { id: 'schedule', icon: 'map' },
+                    { id: 'info', icon: 'info' },
+                    { id: 'shopping', icon: 'shopping-basket' },
+                    { id: 'finance', icon: 'banknote' }
+                ];
+
+                const dates = [
+                    { date: '4/21', weekday: 'Tue', day: '21' },
+                    { date: '4/22', weekday: 'Wed', day: '22' },
+                    { date: '4/23', weekday: 'Thu', day: '23' },
+                    { date: '4/24', weekday: 'Fri', day: '24' },
+                    { date: '4/25', weekday: 'Sat', day: '25' },
+                ];
+
+                const dailyItems = ref([
+                    { category: '航班', name: 'CX450 桃園 → 成田', time: '13:00', note: 'Terminal 1', travelTime: '45' },
+                    { category: '住宿', name: 'KOMACHI Check-in', time: '18:30', address: '116-0014 Tokyo, Arakawa City, Higashinippori, 5 Chome-9-3', note: '日暮里站步行5分鐘' }
+                ]);
+
+                const openGoogleMaps = (address) => {
+                    if(!address) return;
+                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`, '_blank');
+                };
+
+                onMounted(() => { lucide.createIcons(); });
+                updated(() => { lucide.createIcons(); });
+
+                return { currentTab, selectedDate, tabs, dates, dailyItems, jpy, openGoogleMaps };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
